@@ -8,16 +8,16 @@ tags!("", "", "", "", "", "", "", "", "");
 pub const WINDOW_MARGIN: u16 = 10;
 
 pub const WINDOW_BORDER_WIDTH: u16 = 2;
-pub const WINDOW_BORDER_COLOR: u32 = 0xabb2bf;
-pub const WINDOW_BORDER_HL_COLOR: u32 = 0x61afef;
+pub const WINDOW_BORDER_COLOR: u32 = 0xcad3f5;
+pub const WINDOW_BORDER_HL_COLOR: u32 = 0x8aadf4;
 
 pub const BAR_HEIGHT: u16 = 32;
 pub const BAR_TEXT_PADDING: u16 = 12;
 
-pub const BAR_COLOR: u32 = 0x282d34;
-pub const BAR_HL_COLOR: u32 = 0x61afef;
-pub const BAR_TEXT_COLOR: u32 = 0xcccccc;
-pub const BAR_TEXT_HL_COLOR: u32 = 0xeeeeee;
+pub const BAR_COLOR: u32 = 0x24273a;
+pub const BAR_HL_COLOR: u32 = 0x8aadf4;
+pub const BAR_TEXT_COLOR: u32 = 0xcad3f5;
+pub const BAR_TEXT_HL_COLOR: u32 = 0xffffff;
 
 const MOD: x::KeyButMask = x::KeyButMask::MOD4;
 const MODSHIFT: x::KeyButMask = MOD.union(x::KeyButMask::SHIFT);
@@ -26,7 +26,7 @@ const BUTTON1: x::Button = 1;
 const BUTTON3: x::Button = 3;
 
 keys!(
-    (MODSHIFT, KEY_Return, spawn!("alacritty")),
+    (MODSHIFT, KEY_Return, spawn!("kitty")),
     (MOD, KEY_p, spawn!("rmenu_run")),
     (MOD, KEY_e, spawn!("microsoft-edge-stable")),
     (MOD, KEY_s, spawn!("shot")),

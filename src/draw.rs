@@ -58,7 +58,7 @@ impl Draw {
                 .unwrap();
         let context = cairo::Context::new(&surface).unwrap();
 
-        let layout = pangocairo::create_layout(&context);
+        let layout = pangocairo::functions::create_layout(&context);
         layout.set_font_description(Some(&pango::FontDescription::from_string(font)));
 
         Draw {
@@ -87,7 +87,7 @@ impl Draw {
 
         self.context.move_to(x, y);
         self.color(color);
-        pangocairo::show_layout(&self.context, &self.layout);
+        pangocairo::functions::show_layout(&self.context, &self.layout);
     }
 
     pub fn update(&self, x: f64, y: f64, width: i32, height: i32) {

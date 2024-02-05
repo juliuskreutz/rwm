@@ -2,7 +2,7 @@ use xcb::x;
 
 pub struct Cursors {
     left_ptr: x::Cursor,
-    sizing: x::Cursor,
+    bottom_right_corner: x::Cursor,
     fleur: x::Cursor,
 }
 
@@ -11,12 +11,12 @@ impl Cursors {
         let context = xcb_util_cursor::CursorContext::new(connection, screen).unwrap();
 
         let left_ptr = context.load_cursor(xcb_util_cursor::Cursor::LeftPtr);
-        let sizing = context.load_cursor(xcb_util_cursor::Cursor::Sizing);
+        let bottom_right_corner = context.load_cursor(xcb_util_cursor::Cursor::BottomRightCorner);
         let fleur = context.load_cursor(xcb_util_cursor::Cursor::Fleur);
 
         Cursors {
             left_ptr,
-            sizing,
+            bottom_right_corner,
             fleur,
         }
     }
@@ -26,7 +26,7 @@ impl Cursors {
     }
 
     pub fn sizing(&self) -> x::Cursor {
-        self.sizing
+        self.bottom_right_corner
     }
 
     pub fn fleur(&self) -> x::Cursor {

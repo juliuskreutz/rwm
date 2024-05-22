@@ -1,4 +1,5 @@
 use xcb::x;
+use xcb_util::cursor;
 
 pub struct Cursors {
     left_ptr: x::Cursor,
@@ -8,11 +9,11 @@ pub struct Cursors {
 
 impl Cursors {
     pub fn new(connection: &xcb::Connection, screen: &x::Screen) -> Self {
-        let context = xcb_util_cursor::CursorContext::new(connection, screen).unwrap();
+        let context = cursor::CursorContext::new(connection, screen).unwrap();
 
-        let left_ptr = context.load_cursor(xcb_util_cursor::Cursor::LeftPtr);
-        let bottom_right_corner = context.load_cursor(xcb_util_cursor::Cursor::BottomRightCorner);
-        let fleur = context.load_cursor(xcb_util_cursor::Cursor::Fleur);
+        let left_ptr = context.load_cursor(cursor::Cursor::LeftPtr);
+        let bottom_right_corner = context.load_cursor(cursor::Cursor::BottomRightCorner);
+        let fleur = context.load_cursor(cursor::Cursor::Fleur);
 
         Cursors {
             left_ptr,

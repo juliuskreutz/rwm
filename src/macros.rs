@@ -108,24 +108,43 @@ macro_rules! buttons {
     };
 }
 
-macro_rules! atoms_index {
-    ( $first:ident $( $atom:ident )* ) => {
-        pub const $first: usize = 0;
-
-        atoms_index!($($atom)*, 0);
-    };
-    ( $first:ident $( $atom:ident )*, $index:expr ) => {
-        pub const $first: usize = $index + 1;
-
-        atoms_index!($($atom)*, $index + 1);
-    };
-    ( , $index:expr ) => ();
-}
-
 macro_rules! atoms {
-    ( $( $atom:ident ),* $( , )? ) => {
-        atoms_index!($($atom)*);
+    (
+        $(
+            $field:ident => $name:tt,
+        )*
+    ) => {
+        struct Atoms {
+            $(
+                $field: xcb::x::Atom,
+            )*
+            all: Vec<xcb::x::Atom>,
+        }
 
-        pub const ATOMS: [&str; count!($($atom)*)] = [$(stringify!($atom),)*];
+        impl Atoms {
+            fn new(conn: &xcb::Connection) -> xcb::Result<Atoms> {
+                $(
+                    let $field = conn.send_request(&xcb::x::InternAtom {
+                        only_if_exists: false,
+                        name: $name,
+                    });
+                )*
+                $(
+                    let $field = conn.wait_for_reply($field)?.atom();
+                )*
+                let all = vec![
+                    $(
+                        $field,
+                    )*
+                ];
+                Ok(Atoms {
+                    $(
+                        $field,
+                    )*
+                    all
+                })
+            }
+        }
     };
 }
+pub(crate) use atoms;

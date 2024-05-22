@@ -11,25 +11,43 @@ use crate::{
     config,
     cursor::Cursors,
     keymap::Keymap,
+    macros,
     monitor::Monitor,
 };
 
-atoms!(
-    UTF8_STRING,
-    WM_STATE,
-    WM_PROTOCOLS,
-    WM_DELETE_WINDOW,
-    WM_TAKE_FOCUS,
-    _NET_WM_NAME,
-    _NET_SUPPORTING_WM_CHECK,
-    _NET_CLIENT_LIST,
-    _NET_WM_WINDOW_TYPE,
-    _NET_WM_WINDOW_TYPE_DIALOG,
-    _NET_WM_STATE,
-    _NET_WM_STATE_FULLSCREEN,
-    _NET_ACTIVE_WINDOW,
-    _NET_SUPPORTED,
-);
+macros::atoms! {
+    utf8_string => b"UTF8_STRING",
+    wm_state => b"WM_STATE",
+    wm_protocols => b"WM_PROTOCOLS",
+    wm_delete_window => b"WM_DELETE_WINDOW",
+    wm_take_focus => b"WM_TAKE_FOCUS",
+    net_wm_name => b"_NET_WM_NAME",
+    net_supporting_wm_check => b"_NET_SUPPORTING_WM_CHECK",
+    net_client_list => b"_NET_CLIENT_LIST",
+    net_wm_window_type => b"_NET_WM_WINDOW_TYPE",
+    net_wm_window_type_dialog => b"_NET_WM_WINDOW_TYPE_DIALOG",
+    net_wm_state => b"_NET_WM_STATE",
+    net_wm_state_fullscreen => b"_NET_WM_STATE_FULLSCREEN",
+    net_active_window => b"_NET_ACTIVE_WINDOW",
+    net_supported => b"_NET_SUPPORTED",
+}
+
+// atoms!(
+//     UTF8_STRING,
+//     WM_STATE,
+//     WM_PROTOCOLS,
+//     WM_DELETE_WINDOW,
+//     WM_TAKE_FOCUS,
+//     _NET_WM_NAME,
+//     _NET_SUPPORTING_WM_CHECK,
+//     _NET_CLIENT_LIST,
+//     _NET_WM_WINDOW_TYPE,
+//     _NET_WM_WINDOW_TYPE_DIALOG,
+//     _NET_WM_STATE,
+//     _NET_WM_STATE_FULLSCREEN,
+//     _NET_ACTIVE_WINDOW,
+//     _NET_SUPPORTED,
+// );
 
 #[derive(Debug)]
 enum State {
@@ -41,7 +59,7 @@ enum State {
 pub struct Rwm {
     root: x::Window,
     connection: xcb::Connection,
-    atoms: [x::Atom; ATOMS.len()],
+    atoms: Atoms,
     keymap: Keymap,
     monitors: Vec<Monitor>,
     monitor: usize,
@@ -63,12 +81,12 @@ impl Rwm {
         let screen = setup.roots().next().unwrap();
         let root = screen.root();
 
-        let intern_atom_cookies = ATOMS.map(|atom| {
-            connection.send_request(&x::InternAtom {
-                only_if_exists: false,
-                name: atom.as_bytes(),
-            })
-        });
+        // let intern_atom_cookies = ATOMS.map(|atom| {
+        //     connection.send_request(&x::InternAtom {
+        //         only_if_exists: false,
+        //         name: atom.as_bytes(),
+        //     })
+        // });
         let keyboard_mapping_cookie = connection.send_request(&x::GetKeyboardMapping {
             first_keycode: setup.min_keycode(),
             count: setup.max_keycode() - setup.min_keycode() + 1,
@@ -86,8 +104,9 @@ impl Rwm {
             blue: (config::WINDOW_BORDER_HL_COLOR & 0x0000ff) as u16 * 257,
         });
 
-        let atoms =
-            intern_atom_cookies.map(|cookie| connection.wait_for_reply(cookie).unwrap().atom());
+        // let atoms =
+        //     intern_atom_cookies.map(|cookie| connection.wait_for_reply(cookie).unwrap().atom());
+        let atoms = Atoms::new(&connection).unwrap();
 
         let keyboard_mapping = connection.wait_for_reply(keyboard_mapping_cookie).unwrap();
 
@@ -133,7 +152,7 @@ impl Rwm {
 
     pub fn kill(&mut self) {
         if let Some(window) = self.focused {
-            if !self.send_event(window, self.atoms[WM_DELETE_WINDOW]) {
+            if !self.send_event(window, self.atoms.wm_delete_window) {
                 self.connection.send_request(&x::KillClient {
                     resource: window.resource_id(),
                 });
@@ -346,7 +365,7 @@ impl Rwm {
         self.connection.send_request(&x::ChangeProperty {
             mode: x::PropMode::Replace,
             window,
-            property: self.atoms[_NET_SUPPORTING_WM_CHECK],
+            property: self.atoms.net_supporting_wm_check,
             r#type: x::ATOM_WINDOW,
             data: &[window],
         });
@@ -354,15 +373,15 @@ impl Rwm {
         self.connection.send_request(&x::ChangeProperty {
             mode: x::PropMode::Replace,
             window,
-            property: self.atoms[_NET_WM_NAME],
-            r#type: self.atoms[UTF8_STRING],
+            property: self.atoms.net_wm_name,
+            r#type: self.atoms.utf8_string,
             data: b"rwm",
         });
 
         self.connection.send_request(&x::ChangeProperty {
             mode: x::PropMode::Replace,
             window: self.root,
-            property: self.atoms[_NET_SUPPORTING_WM_CHECK],
+            property: self.atoms.net_supporting_wm_check,
             r#type: x::ATOM_WINDOW,
             data: &[window],
         });
@@ -370,14 +389,14 @@ impl Rwm {
         self.connection.send_request(&x::ChangeProperty {
             mode: x::PropMode::Replace,
             window: self.root,
-            property: self.atoms[_NET_SUPPORTED],
+            property: self.atoms.net_supported,
             r#type: x::ATOM_ATOM,
-            data: &self.atoms,
+            data: &self.atoms.all,
         });
 
         self.connection.send_request(&x::DeleteProperty {
             window: self.root,
-            property: self.atoms[_NET_CLIENT_LIST],
+            property: self.atoms.net_client_list,
         });
 
         self.connection.flush().unwrap();
@@ -506,11 +525,11 @@ impl Rwm {
             });
 
             let fullscreen = self
-                .get_atom_property(event.window(), self.atoms[_NET_WM_STATE])
-                .contains(&self.atoms[_NET_WM_STATE_FULLSCREEN]);
+                .get_atom_property(event.window(), self.atoms.net_wm_state)
+                .contains(&self.atoms.net_wm_state_fullscreen);
             let floating = self
-                .get_atom_property(event.window(), self.atoms[_NET_WM_WINDOW_TYPE])
-                .contains(&self.atoms[_NET_WM_WINDOW_TYPE_DIALOG]);
+                .get_atom_property(event.window(), self.atoms.net_wm_window_type)
+                .contains(&self.atoms.net_wm_window_type_dialog);
 
             if let Ok(geometry) = self.connection.wait_for_reply(geometry_cookie) {
                 self.monitors[self.monitor].map(
@@ -536,7 +555,7 @@ impl Rwm {
         self.connection.send_request(&x::ChangeProperty {
             mode: x::PropMode::Append,
             window: self.root,
-            property: self.atoms[_NET_CLIENT_LIST],
+            property: self.atoms.net_client_list,
             r#type: x::ATOM_WINDOW,
             data: &[event.window()],
         });
@@ -544,8 +563,8 @@ impl Rwm {
         self.connection.send_request(&x::ChangeProperty {
             mode: x::PropMode::Replace,
             window: event.window(),
-            property: self.atoms[WM_STATE],
-            r#type: self.atoms[WM_STATE],
+            property: self.atoms.wm_state,
+            r#type: self.atoms.wm_state,
             data: &[1u32],
         });
 
@@ -566,7 +585,7 @@ impl Rwm {
 
         self.connection.send_request(&x::DeleteProperty {
             window: self.root,
-            property: self.atoms[_NET_CLIENT_LIST],
+            property: self.atoms.net_client_list,
         });
 
         for monitor in &self.monitors {
@@ -574,7 +593,7 @@ impl Rwm {
                 self.connection.send_request(&x::ChangeProperty {
                     mode: x::PropMode::Append,
                     window: self.root,
-                    property: self.atoms[_NET_CLIENT_LIST],
+                    property: self.atoms.net_client_list,
                     r#type: x::ATOM_WINDOW,
                     data: &[client],
                 });
@@ -660,10 +679,10 @@ impl Rwm {
     }
 
     fn property_notify(&mut self, event: x::PropertyNotifyEvent) {
-        if event.atom() == self.atoms[_NET_WM_WINDOW_TYPE]
+        if event.atom() == self.atoms.net_wm_window_type
             && self
-                .get_atom_property(event.window(), self.atoms[_NET_WM_WINDOW_TYPE])
-                .contains(&self.atoms[_NET_WM_WINDOW_TYPE_DIALOG])
+                .get_atom_property(event.window(), self.atoms.net_wm_window_type)
+                .contains(&self.atoms.net_wm_window_type_dialog)
         {
             for monitor in &mut self.monitors {
                 monitor.set_floating(&self.connection, event.window());
@@ -674,9 +693,9 @@ impl Rwm {
     }
 
     fn client_message(&mut self, event: x::ClientMessageEvent) {
-        if event.r#type() == self.atoms[_NET_WM_STATE] {
+        if event.r#type() == self.atoms.net_wm_state {
             if let x::ClientMessageData::Data32(data) = event.data() {
-                if data[1] == self.atoms[_NET_WM_STATE_FULLSCREEN].resource_id() {
+                if data[1] == self.atoms.net_wm_state_fullscreen.resource_id() {
                     for monitor in &mut self.monitors {
                         if data[0] == 1 {
                             monitor.set_fullscreen(&self.connection, event.window());
@@ -715,16 +734,16 @@ impl Rwm {
             self.connection.send_request(&x::ChangeProperty {
                 mode: x::PropMode::Replace,
                 window: self.root,
-                property: self.atoms[_NET_ACTIVE_WINDOW],
+                property: self.atoms.net_active_window,
                 r#type: x::ATOM_WINDOW,
                 data: &[window],
             });
 
-            self.send_event(window, self.atoms[WM_TAKE_FOCUS]);
+            self.send_event(window, self.atoms.wm_take_focus);
         } else {
             self.connection.send_request(&x::DeleteProperty {
                 window: self.root,
-                property: self.atoms[_NET_ACTIVE_WINDOW],
+                property: self.atoms.net_active_window,
             });
         }
 
@@ -837,12 +856,12 @@ impl Rwm {
 
     fn send_event(&self, window: x::Window, atom: x::Atom) -> bool {
         if self
-            .get_atom_property(window, self.atoms[WM_PROTOCOLS])
+            .get_atom_property(window, self.atoms.wm_protocols)
             .contains(&atom)
         {
             let event = x::ClientMessageEvent::new(
                 window,
-                self.atoms[WM_PROTOCOLS],
+                self.atoms.wm_protocols,
                 x::ClientMessageData::Data32([atom.resource_id(), x::CURRENT_TIME, 0, 0, 0]),
             );
             self.connection.send_request(&x::SendEvent {
@@ -862,7 +881,7 @@ impl Rwm {
         let name = self
             .focused
             .and_then(|window| {
-                self.get_property(window, self.atoms[_NET_WM_NAME], self.atoms[UTF8_STRING])
+                self.get_property(window, self.atoms.net_wm_name, self.atoms.utf8_string)
                     .ok()
                     .and_then(|reply| {
                         std::str::from_utf8(reply.value())
@@ -883,10 +902,10 @@ impl Rwm {
             .unwrap_or_default();
 
         for (i, monitor) in self.monitors.iter_mut().enumerate() {
-            *monitor.status_mut() = status.clone();
+            monitor.status_mut().clone_from(&status);
 
             if i == self.monitor {
-                *monitor.name_mut() = name.clone();
+                monitor.name_mut().clone_from(&name);
             } else {
                 *monitor.name_mut() = "".to_string();
             }

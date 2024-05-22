@@ -1,6 +1,6 @@
 [package]
 name = "rwm"
-version = "1.0.0"
+version = "0.1.0"
 authors = ["Julius Kreutz <julius@kreutz.dev>"]
 edition = "2021"
 description = "A small rust window manager"
@@ -15,13 +15,15 @@ strip = true
 panic = "abort"
 
 [dependencies]
-pangocairo = "0.19.1"
-xcb-util-cursor = "0.3.2"
+pangocairo = "0.19.2"
+xcb-util = { git = "https://github.com/juliuskreutz/xcb-util-rs", version = "0.1.0", features = [
+  "cursor",
+] }
 
 [dependencies.xcb]
-version = "1.3.0"
+version = "1.4.0"
 features = ["xinerama"]
 
 [dependencies.cairo-rs]
-version = "0.19.1"
+version = "0.19.4"
 features = ["xcb"]

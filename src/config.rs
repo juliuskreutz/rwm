@@ -1,9 +1,9 @@
 use crate::key::*;
 use xcb::x;
 
-pub const FONT: &str = "Comic Code Ligatures, Font Awesome 6 Brands, Font Awesome 6 Free Solid 13";
+pub const FONT: &str = "ComicCodeLigatures Nerd Font Propo 13";
 
-tags!("", "", "", "", "", "", "", "", "");
+tags!("", "", "", "", "", "", "", "", "");
 
 pub const WINDOW_MARGIN: u16 = 10;
 
@@ -28,7 +28,8 @@ const BUTTON3: x::Button = 3;
 keys!(
     (MODSHIFT, KEY_Return, spawn!("kitty")),
     (MOD, KEY_p, spawn!("rmenu_run")),
-    (MOD, KEY_e, spawn!("microsoft-edge-stable")),
+    (MOD, KEY_k, spawn!("rmenu_pass")),
+    (MOD, KEY_e, spawn!("chromium")),
     (MOD, KEY_s, spawn!("shot")),
     (MOD, KEY_q, spawn!("copyq", "toggle")),
     (MODSHIFT, KEY_c, kill!()),

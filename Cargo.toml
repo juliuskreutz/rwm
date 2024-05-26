@@ -16,9 +16,7 @@ panic = "abort"
 
 [dependencies]
 pangocairo = "0.19.2"
-xcb-util = { git = "https://github.com/juliuskreutz/xcb-util-rs", version = "0.1.0", features = [
-  "cursor",
-] }
+xcb-util-cursor = "0.3.3"
 
 [dependencies.xcb]
 version = "1.4.0"

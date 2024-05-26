@@ -1,5 +1,5 @@
 use xcb::x;
-use xcb_util::cursor;
+use xcb_util_cursor as cursor;
 
 pub struct Cursors {
     left_ptr: x::Cursor,

@@ -12,7 +12,7 @@
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = {
+  outputs = inputs @ {
     self,
     nixpkgs,
     crane,
@@ -24,19 +24,7 @@
         rwm = self.packages.${prev.stdenv.hostPlatform.system}.default;
       };
       overlays.rwm = self.overlays.default;
-      nixosModules.default = {
-        config = {
-          services.xserver.windowManager.session = [
-            {
-              name = "rwm";
-              start = ''
-                       rwm &
-                waitPID=$!
-              '';
-            }
-          ];
-        };
-      };
+      nixosModules.default = import ./rwm.nix inputs;
       nixosModules.rwm = self.nixosModules.default;
     }
     // (flake-utils.lib.eachDefaultSystem (system: let

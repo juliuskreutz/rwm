@@ -70,6 +70,7 @@
       formatter = pkgs.alejandra;
 
       packages.default = rwm;
+      packages.rwm = rwm;
 
       apps.default = flake-utils.lib.mkApp {
         drv = rwm;

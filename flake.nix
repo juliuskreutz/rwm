@@ -12,49 +12,49 @@
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, crane, flake-utils, ... }:
-    flake-utils.lib.eachDefaultSystem (system:
-      let
-        pkgs = nixpkgs.legacyPackages.${system};
+  outputs = {
+    self,
+    nixpkgs,
+    crane,
+    flake-utils,
+    ...
+  }:
+    flake-utils.lib.eachDefaultSystem (system: let
+      pkgs = nixpkgs.legacyPackages.${system};
 
-        craneLib = crane.mkLib pkgs;
+      craneLib = crane.mkLib pkgs;
 
-        commonArgs = {
-          src = craneLib.cleanCargoSource (craneLib.path ./.);
-          strictDeps = true;
+      commonArgs = {
+        src = craneLib.cleanCargoSource (craneLib.path ./.);
+        strictDeps = true;
 
-          nativeBuildInputs = with pkgs; [
-            pkg-config
-            rustPlatform.bindgenHook
-          ];
+        nativeBuildInputs = with pkgs; [
+          pkg-config
+          rustPlatform.bindgenHook
+        ];
 
-          buildInputs = with pkgs; [
-            xcb-util-cursor
-            glib
-            pango
-          ];
-        };
+        buildInputs = with pkgs; [
+          xcb-util-cursor
+          glib
+          pango
+        ];
+      };
 
-        rwm = craneLib.buildPackage (commonArgs // {
+      rwm = craneLib.buildPackage (commonArgs
+        // {
           cargoArtifacts = craneLib.buildDepsOnly commonArgs;
         });
-      in
-      {
-        checks = {
-          inherit rwm;
-        };
+    in {
+      checks = {
+        inherit rwm;
+      };
 
-        packages.default = rwm;
+      formatter = pkgs.alejandra;
 
-        apps.default = flake-utils.lib.mkApp {
-          drv = rwm;
-        };
+      packages.default = rwm;
 
-        devShells.default = craneLib.devShell {
-          checks = self.checks.${system};
-
-          packages = [
-          ];
-        };
-      });
+      apps.default = flake-utils.lib.mkApp {
+        drv = rwm;
+      };
+    });
 }

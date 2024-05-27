@@ -18,43 +18,47 @@
     crane,
     flake-utils,
     ...
-  }:
-    flake-utils.lib.eachDefaultSystem (system: let
-      pkgs = nixpkgs.legacyPackages.${system};
+  }: {
+    overlays.default = _: prev: {
+      rwm = self.packages.${prev.stdenv.hostPlatform.system}.default
+    }
+  } //
+  (flake-utils.lib.eachDefaultSystem (system: let
+    pkgs = nixpkgs.legacyPackages.${system};
 
-      craneLib = crane.mkLib pkgs;
+    craneLib = crane.mkLib pkgs;
 
-      commonArgs = {
-        src = craneLib.cleanCargoSource (craneLib.path ./.);
-        strictDeps = true;
+    commonArgs = {
+      src = craneLib.cleanCargoSource (craneLib.path ./.);
+      strictDeps = true;
 
-        nativeBuildInputs = with pkgs; [
-          pkg-config
-          rustPlatform.bindgenHook
-        ];
+      nativeBuildInputs = with pkgs; [
+        pkg-config
+        rustPlatform.bindgenHook
+      ];
 
-        buildInputs = with pkgs; [
-          xcb-util-cursor
-          glib
-          pango
-        ];
-      };
+      buildInputs = with pkgs; [
+        xcb-util-cursor
+        glib
+        pango
+      ];
+    };
 
-      rwm = craneLib.buildPackage (commonArgs
-        // {
-          cargoArtifacts = craneLib.buildDepsOnly commonArgs;
-        });
-    in {
-      checks = {
-        inherit rwm;
-      };
+    rwm = craneLib.buildPackage (commonArgs
+      // {
+        cargoArtifacts = craneLib.buildDepsOnly commonArgs;
+      });
+  in {
+    checks = {
+      inherit rwm;
+    };
 
-      formatter = pkgs.alejandra;
+    formatter = pkgs.alejandra;
 
-      packages.default = rwm;
+    packages.default = rwm;
 
-      apps.default = flake-utils.lib.mkApp {
-        drv = rwm;
-      };
-    });
+    apps.default = flake-utils.lib.mkApp {
+      drv = rwm;
+    };
+  }));
 }

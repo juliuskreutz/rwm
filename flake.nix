@@ -23,6 +23,19 @@
       overlays.default = _: prev: {
         rwm = self.packages.${prev.stdenv.hostPlatform.system}.default;
       };
+      nixosModules.default = {
+        config = {
+          services.xserver.windowManager.session = [
+            {
+              name = "rwm";
+              start = ''
+                       rwm &
+                waitPID=$!
+              '';
+            }
+          ];
+        };
+      };
     }
     // (flake-utils.lib.eachDefaultSystem (system: let
       pkgs = nixpkgs.legacyPackages.${system};

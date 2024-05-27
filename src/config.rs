@@ -1,7 +1,7 @@
 use crate::key::*;
 use xcb::x;
 
-pub const FONT: &str = "ComicCodeLigatures Nerd Font Propo 13";
+pub const FONT: &str = "FiraCode Nerd Font 13";
 
 tags!("", "", "", "", "", "", "", "", "");
 

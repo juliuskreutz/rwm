@@ -23,6 +23,7 @@
       overlays.default = _: prev: {
         rwm = self.packages.${prev.stdenv.hostPlatform.system}.default;
       };
+      overlays.rwm = self.overlays.default;
       nixosModules.default = {
         config = {
           services.xserver.windowManager.session = [
@@ -36,6 +37,7 @@
           ];
         };
       };
+      nixosModules.rwm = self.nixosModules.default;
     }
     // (flake-utils.lib.eachDefaultSystem (system: let
       pkgs = nixpkgs.legacyPackages.${system};

@@ -27,7 +27,7 @@ const BUTTON3: x::Button = 3;
 
 keys!(
     (MODSHIFT, KEY_Return, spawn!("kitty")),
-    (MOD, KEY_p, spawn!("dmenu_run")),
+    (MOD, KEY_p, spawn!("rmenu_run")),
     (MOD, KEY_k, spawn!("rmenu_pass")),
     (MOD, KEY_e, spawn!("chromium")),
     (MOD, KEY_s, spawn!("shot")),

@@ -15,7 +15,7 @@ strip = true
 panic = "abort"
 
 [dependencies]
-pangocairo = "0.19.2"
+pangocairo = "0.20.1"
 xcb-util-cursor = "0.3.3"
 
 [dependencies.xcb]
@@ -23,5 +23,5 @@ version = "1.4.0"
 features = ["xinerama"]
 
 [dependencies.cairo-rs]
-version = "0.19.4"
+version = "0.20.1"
 features = ["xcb"]

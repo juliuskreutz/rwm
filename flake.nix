@@ -57,8 +57,6 @@
         inherit rwm;
       };
 
-      formatter = pkgs.alejandra;
-
       packages.default = rwm;
       packages.rwm = rwm;
 

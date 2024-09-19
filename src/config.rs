@@ -1,7 +1,7 @@
 use crate::key::*;
 use xcb::x;
 
-pub const FONT: &str = "ComicCodeLigatures Nerd Font Mono 24";
+pub const FONT: &str = "ComicCodeLigatures Nerd Font 13";
 
 tags!("", "", "", "", "", "", "", "", "");
 

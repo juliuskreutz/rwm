@@ -19,6 +19,7 @@
         rwm = self.packages.${prev.stdenv.hostPlatform.system}.default;
       };
       overlays.rwm = self.overlays.default;
+
       nixosModules.default = import ./rwm.nix inputs;
       nixosModules.rwm = self.nixosModules.default;
     }
@@ -26,9 +27,10 @@
       pkgs = nixpkgs.legacyPackages.${system};
 
       craneLib = crane.mkLib pkgs;
+      src = craneLib.cleanCargoSource ./.;
 
       commonArgs = {
-        src = craneLib.cleanCargoSource (craneLib.path ./.);
+        inherit src;
         strictDeps = true;
 
         nativeBuildInputs = with pkgs; [
@@ -43,9 +45,11 @@
         ];
       };
 
+      cargoArtifacts = craneLib.buildDepsOnly commonArgs;
+
       rwm = craneLib.buildPackage (commonArgs
         // {
-          cargoArtifacts = craneLib.buildDepsOnly commonArgs;
+          inherit cargoArtifacts;
         });
     in {
       checks = {
@@ -53,7 +57,7 @@
       };
 
       packages.default = rwm;
-      packages.rwm = rwm;
+      packages.rwm = self.packages.default;
 
       apps.default = flake-utils.lib.mkApp {
         drv = rwm;
